@@ -9,7 +9,7 @@ function parseToken(token){
 const handler = {
     user:{
         GET: req => {
-            if(req.auth.userId){
+            if(req.auth?.userId){
                 return data.user[req.auth.userId]||null
             }
             return data.user;
@@ -63,14 +63,22 @@ const handler = {
 }
 
 
+const CORS_HEADERS = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'OPTIONS, POST, PUT, DELETE, GET',
+    'Access-Control-Allow-Headers': 'Content-Type',
+}
 
 
 const server = Bun.serve({
     port: 5000,
     async fetch(req){
+        if (req.method === 'OPTIONS') {
+            return Response('Departed', {headers: CORS_HEADERS});
+        }
         const url = new URL(req.url);
         const radix = url.pathname.split('/');
-        const NOT_FOUND = `Path ${url.pathname} with methof ${req.method} does not exist`;
+        const NOT_FOUND = `Path ${url.pathname} with method ${req.method} does not exist`;
         radix.shift();
         const lastElement = radix.at(-1)
         if(parseInt(lastElement).toString().length === lastElement.length || lastElement === '0'){
@@ -98,10 +106,10 @@ const server = Bun.serve({
                 req.auth = {userId: parseToken(token)}
             }
         }
-        return Response.json(toCompute(req))
+        return Response.json(toCompute(req), {headers: CORS_HEADERS})
     },
     error(err){
-        return Response(err, {status: 404})
+        return Response.json(err, {status: 404, headers: CORS_HEADERS})
     }
 })
 

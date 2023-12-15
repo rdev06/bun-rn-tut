@@ -32,23 +32,21 @@ export default function Login() {
       <Pressable
         onPress={async () => {
           setLoader(true);
-          const toSend = {
-            method: 'post',
-            url: base_url + '/user/login',
-            data : JSON.stringify({
-              email: 'rdev.dev06@gmail.com',
-              password: 'pass123'
-            })
-          }
-          const resp = await axios(toSend).catch(err => {
+          const resp = await axios.post(base_url + '/user/login', {
+            email,
+            password
+          }).catch(err => {
             console.error(err);
             setLoader(false);
+            return err
           })
-          localStorage.setItem('authToken', resp.data.token);
-          setEmail('');
-          setPassword('');
-          setLoader(false);
-          navigation.navigate('Todo');
+          if(resp.data){
+            localStorage.setItem('authToken', resp.data.token);
+            setEmail('');
+            setPassword('');
+            setLoader(false);
+            navigation.navigate('Todo');
+          }
         }}
       >
         <Text>Login</Text>
